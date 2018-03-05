@@ -135,6 +135,7 @@ def test_extract_references_from_file(pdf_files):
     with pytest.raises(FullTextNotAvailableError):
         extract_references_from_file(pdf_files[0] + "error")
 
+
 @responses.activate
 def test_extract_references_from_url(pdf_files):
     with open(pdf_files[0], 'rb') as fd:

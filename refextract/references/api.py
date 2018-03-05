@@ -30,23 +30,23 @@ from a raw string.
 
 
 import os
-import sys
 import requests
 import magic
 
 from tempfile import mkstemp
-from itertools import izip
+try:
+    from itertools import izip
+except ImportError:  # python3.x
+    izip = zip
 
 from .engine import (get_kbs,
                      get_plaintext_document_body,
                      parse_reference_line,
-                     parse_references,
-                     parse_tagged_reference_line)
+                     parse_references)
 from .errors import FullTextNotAvailableError
 from .find import (find_numeration_in_body,
                    get_reference_section_beginning)
 from .pdf import extract_texkeys_from_pdf
-from .tag import tag_reference_line
 from .text import extract_references_from_fulltext, rebuild_reference_lines
 
 
@@ -92,7 +92,7 @@ def extract_references_from_url(url, headers=None, chunk_size=1024, **kwargs):
                 f.write(chunk)
         references = extract_references_from_file(filepath, **kwargs)
     except requests.exceptions.HTTPError as e:
-        raise FullTextNotAvailableError("URL not found: '{0}'".format(url)), None, sys.exc_info()[2]
+        raise FullTextNotAvailableError("URL not found: '{0}'".format(url))
     finally:
         os.remove(filepath)
     return references

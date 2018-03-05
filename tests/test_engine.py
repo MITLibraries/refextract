@@ -32,8 +32,6 @@ from refextract.references.engine import (
 
 from refextract.references.errors import UnknownDocumentTypeError
 
-from refextract.references.text import wash_and_repair_reference_line
-
 
 def get_references(ref_line, override_kbs_files=None):
     return parse_references([ref_line], override_kbs_files=override_kbs_files)
@@ -131,4 +129,7 @@ def test_get_plaintext_document_body(tmpdir):
         f = tmpdir.join("page.html")
         f.write(html)
         get_plaintext_document_body(str(f))
-    assert 'text/html' in excinfo.value
+    try:
+        assert 'text/html' in excinfo.value
+    except TypeError:
+        assert 'text/html' in str(excinfo)

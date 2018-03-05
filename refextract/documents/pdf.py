@@ -470,7 +470,7 @@ def convert_PDF_to_plaintext(fpath, keep_layout=False):
     # If this pattern is matched, we want to split the page-break into
     # its own line because we rely upon this for trying to strip headers
     # and footers, and for some other pattern matching.
-    p_break_in_line = re.compile(ur'^\s*\f(.+)$', re.UNICODE)
+    p_break_in_line = re.compile(r'^\s*\f(.+)$', re.UNICODE)
     # build pdftotext command:
     cmd_pdftotext = [CFG_PATH_PDFTOTEXT, layout_option, "-q",
                      "-enc", "UTF-8", fpath, "-"]

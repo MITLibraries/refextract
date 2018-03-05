@@ -23,7 +23,12 @@
 
 import re
 
-from urlparse import unquote
+from functools import cmp_to_key
+from six import iteritems
+try:
+    from urlparse import unquote
+except ImportError:  # python3
+    from urllib.parse import unquote
 
 from unidecode import unidecode
 
@@ -250,18 +255,36 @@ def process_reference_line(working_line,
         # for replacement of IBIDs.
         replacement_types = {}
         journals_keys = journals_matches.keys()
-        journals_keys.sort()
+        try:
+            journals_keys.sort()
+        except AttributeError:
+            journals_keys = sorted(journals_keys)
+
         reports_keys = pprint_repnum_matchtext.keys()
-        reports_keys.sort()
+        try:
+            reports_keys.sort()
+        except AttributeError:
+            reports_keys = sorted(reports_keys)
+
         publishers_keys = publishers_matches.keys()
-        publishers_keys.sort()
+        try:
+            publishers_keys.sort()
+        except AttributeError:
+            publishers_keys = sorted(publishers_keys)
+
         spaces_keys = removed_spaces.keys()
-        spaces_keys.sort()
+        try:
+            spaces_keys.sort()
+        except AttributeError:
+            spaces_keys = sorted(spaces_keys)
         replacement_types = get_replacement_types(journals_keys,
                                                   reports_keys,
                                                   publishers_keys)
         replacement_locations = replacement_types.keys()
-        replacement_locations.sort()
+        try:
+            replacement_locations.sort()
+        except AttributeError:
+            replacement_locations = sorted(replacement_locations)
 
         tagged_line = u""  # This is to be the new 'working-line'. It will
         # contain the tagged TITLEs and REPORT-NUMBERs,
@@ -342,7 +365,7 @@ def wash_volume_tag(line):
 
 def tag_isbn(line):
     """Tag books ISBN"""
-    return re_isbn.sub(ur'<cds.ISBN>\g<code></cds.ISBN>', line)
+    return re_isbn.sub(r'<cds.ISBN>\g<code></cds.ISBN>', line)
 
 
 def tag_quoted_text(line):
@@ -352,7 +375,7 @@ def tag_quoted_text(line):
     associate we record.
     We also use titles for recognising books.
     """
-    return re_quoted.sub(ur'<cds.QUOTED>\g<title></cds.QUOTED>', line)
+    return re_quoted.sub(r'<cds.QUOTED>\g<title></cds.QUOTED>', line)
 
 
 def tag_arxiv(line):
@@ -389,10 +412,10 @@ def tag_arxiv_more(line):
     * hep-th/1234567
     * arXiv:1022111 [hep-ph] which transforms to hep-ph/1022111
     """
-    line = RE_ARXIV_CATCHUP.sub(ur"\g<suffix>/\g<year>\g<month>\g<num>", line)
+    line = RE_ARXIV_CATCHUP.sub(r"\g<suffix>/\g<year>\g<month>\g<num>", line)
 
     for report_re, report_repl in RE_OLD_ARXIV:
-        report_number = report_repl + ur"/\g<num>"
+        report_number = report_repl + r"/\g<num>"
         line = report_re.sub(
             u'<cds.REPORTNUMBER>' + report_number + u'</cds.REPORTNUMBER>',
             line
@@ -436,9 +459,9 @@ def tag_pos_volume(line):
 
 def tag_atlas_conf(line):
     line = RE_ATLAS_CONF_PRE_2010.sub(
-        ur'<cds.REPORTNUMBER>ATL-CONF-\g<code></cds.REPORTNUMBER>', line)
+        r'<cds.REPORTNUMBER>ATL-CONF-\g<code></cds.REPORTNUMBER>', line)
     line = RE_ATLAS_CONF_POST_2010.sub(
-        ur'<cds.REPORTNUMBER>ATLAS-CONF-\g<code></cds.REPORTNUMBER>', line)
+        r'<cds.REPORTNUMBER>ATLAS-CONF-\g<code></cds.REPORTNUMBER>', line)
     return line
 
 
@@ -847,7 +870,7 @@ def strip_tags(line):
     # author content can be checked for underscores later on
     # Note that we don't have embedded tags this is why
     # we can do this
-    re_tag = re.compile(ur'<cds\.[A-Z]+>[^<]*</cds\.[A-Z]+>|<cds\.[A-Z]+ />',
+    re_tag = re.compile(r'<cds\.[A-Z]+>[^<]*</cds\.[A-Z]+>|<cds\.[A-Z]+ />',
                         re.UNICODE)
     for m in re_tag.finditer(line):
         chars_count = m.end() - m.start()
@@ -866,7 +889,7 @@ def identify_and_tag_collaborations(line, collaborations_kb):
        which won't influence the reference splitting heuristics
        (used when looking at mulitple <AUTH> tags in a line).
     """
-    for dummy_collab, re_collab in collaborations_kb.iteritems():
+    for dummy_collab, re_collab in iteritems(collaborations_kb):
         matches = re_collab.finditer(strip_tags(line))
 
         for match in reversed(list(matches)):
@@ -1235,7 +1258,10 @@ def identify_report_numbers(line, kb_reports):
 
     repnum_search_kb, repnum_standardised_categs = kb_reports
     repnum_categs = repnum_standardised_categs.keys()
-    repnum_categs.sort(_by_len)
+    try:
+        repnum_categs.sort(_by_len)
+    except AttributeError:
+        repnum_categs = sorted(repnum_categs, key=cmp_to_key(_by_len))
 
     # Handle CERN/LHCC/98-013
     line = line.replace('/', ' ')
@@ -1282,7 +1308,7 @@ def identify_publishers(line, kb_publishers):
     matches_repl = {}  # standardised report numbers matched
     # at given locations in line
 
-    for abbrev, info in kb_publishers.iteritems():
+    for abbrev, info in iteritems(kb_publishers):
         for match in info['pattern'].finditer(line):
             # record the matched non-standard version of the publisher:
             matches_repl[match.start(0)] = abbrev
@@ -1376,7 +1402,10 @@ def identify_and_tag_URLs(line):
     # Now that all URLs have been identified, insert them
     # back into the line, tagged:
     found_url_positions = found_url_urlstring.keys()
-    found_url_positions.sort()
+    try:
+        found_url_positions.sort()
+    except AttributeError:
+        found_url_positions = sorted(found_url_positions)
     found_url_positions.reverse()
     for url_position in found_url_positions:
         line = line[0:url_position] + "<cds.URL />" \
@@ -1385,7 +1414,10 @@ def identify_and_tag_URLs(line):
     # The line has been rebuilt. Now record the information about the
     # matched URLs:
     found_url_positions = found_url_urlstring.keys()
-    found_url_positions.sort()
+    try:
+        found_url_positions.sort()
+    except AttributeError:
+        found_url_positions = sorted(found_url_positions)
     for url_position in found_url_positions:
         identified_urls.append((found_url_urlstring[url_position],
                                 found_url_urldescr[url_position]))

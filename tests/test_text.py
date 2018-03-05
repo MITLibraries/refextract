@@ -29,7 +29,7 @@ from refextract.references.text import (
 
 
 def test_simple():
-    marker_pattern = ur"^\s*(?P<mark>\[\s*(?P<marknum>\d+)\s*\])"
+    marker_pattern = r"^\s*(?P<mark>\[\s*(?P<marknum>\d+)\s*\])"
     refs = [
         u"[1] hello",
         u"hello2",
@@ -43,7 +43,7 @@ def test_simple():
 
 
 def test_pagination_non_removal():
-    marker_pattern = ur"^\s*(?P<mark>\[\s*(?P<marknum>\d+)\s*\])"
+    marker_pattern = r"^\s*(?P<mark>\[\s*(?P<marknum>\d+)\s*\])"
     refs = [
         u"[1] hello",
         u"hello2",
@@ -58,7 +58,7 @@ def test_pagination_non_removal():
 
 
 def test_2_lines_together():
-    marker_pattern = ur"\s*(?P<mark>\[\s*(?P<marknum>\d+)\s*\])"
+    marker_pattern = r"\s*(?P<mark>\[\s*(?P<marknum>\d+)\s*\])"
     refs = [
         u"[1] hello",
         u"hello2 [2] foo",

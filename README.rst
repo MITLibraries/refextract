@@ -39,6 +39,8 @@ Dependencies
 ============
 * [file](http://linux.die.net/man/1/file)
 * [pdftotext](http://linux.die.net/man/1/pdftotext)
+  * This will be installed via pipenv
+  * But on OS X you must first `brew install pkg-config poppler`
 
 Installation
 ============

@@ -23,11 +23,10 @@
 
 from __future__ import print_function
 
-import re
+from six import iteritems
 import sys
 
 from PyPDF2 import PdfFileReader
-from PyPDF2.utils import PyPdfError
 
 from .regexs import re_reference_in_dest
 
@@ -58,7 +57,7 @@ def extract_texkeys_from_pdf(pdf_file):
                   file=sys.stderr)
             return []
         # not all named destinations point to references
-        refs = [dest for dest in destinations.iteritems()
+        refs = [dest for dest in iteritems(destinations)
                 if re_reference_in_dest.match(dest[0])]
         try:
             if _destinations_in_two_columns(pdf, refs):
